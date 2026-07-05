@@ -13,6 +13,7 @@ import {
 	Building2,
 	AtSign,
 	Link,
+	Trash2,
 } from "lucide-react";
 
 const GRADIENTS = [
@@ -264,7 +265,9 @@ function AddEmployeeModal({ onClose, onAdd }) {
 	);
 }
 
-function EmployeeCard({ emp, index }) {
+function deleteEmployee() {}
+
+function EmployeeCard({ emp, index, onDelete }) {
 	const gradient = GRADIENTS[index % GRADIENTS.length];
 	const tilt = TILTS[index % TILTS.length];
 
@@ -323,6 +326,14 @@ function EmployeeCard({ emp, index }) {
 				<Globe className='w-3.5 h-3.5' />
 				{emp.website}
 			</a>
+
+			<button
+				onClick={() => onDelete(emp.id)}
+				className='mt-2 flex items-center justify-center gap-1.5 w-full py-2 rounded-xl text-xs font-bold transition-all border bg-white/3 border-white/8 text-slate-500 hover:bg-rose-500/10 hover:border-rose-400/30 hover:text-rose-400'
+			>
+				<Trash2 className='w-3.5 h-3.5' />
+				Remove from squad
+			</button>
 		</div>
 	);
 }
@@ -361,9 +372,18 @@ export default function AllEmployees() {
 			})
 			.catch(() => setLoading(false));
 	}, []);
+
 	const handleAddEmployee = newEmp => {
 		setEmployees(prev => [newEmp, ...prev]);
 	};
+	const handleDeleteEmployee = id => {
+		{
+			console.log(setEmployees);
+		}
+		// setEmployees(prev => console.log(prev));
+		setEmployees(prev => prev.filter(emp => emp.id !== id));
+	};
+
 	const filtered = employees.filter(
 		emp =>
 			emp.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -432,7 +452,12 @@ export default function AllEmployees() {
 				) : (
 					<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5'>
 						{filtered.map((emp, i) => (
-							<EmployeeCard key={emp.id} emp={emp} index={i} />
+							<EmployeeCard
+								key={emp.id}
+								emp={emp}
+								index={i}
+								onDelete={handleDeleteEmployee}
+							/>
 						))}
 					</div>
 				)}
