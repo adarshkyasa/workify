@@ -14,6 +14,7 @@ import {
 	AtSign,
 	Link,
 	Trash2,
+	Pencil,
 } from "lucide-react";
 
 const GRADIENTS = [
@@ -82,6 +83,7 @@ function AddEmployeeModal({ onClose, onAdd }) {
 		website: "",
 		company: "",
 	});
+
 	const [error, setError] = useState("");
 
 	// close on overlay click
@@ -138,14 +140,14 @@ function AddEmployeeModal({ onClose, onAdd }) {
 		>
 			<div className='relative w-full max-w-lg bg-slate-900/90 border border-white/10 rounded-3xl shadow-2xl shadow-purple-900/30 overflow-hidden'>
 				{/* gradient header stripe */}
-				<div className={`h-1.5 w-full bg-gradient-to-r ${previewGradient}`} />
+				<div className={`h-1.5 w-full bg-linear-to-r ${previewGradient}`} />
 
 				{/* header */}
 				<div className='flex items-center justify-between px-6 pt-5 pb-4'>
 					<div className='flex items-center gap-3'>
 						{/* live avatar preview */}
 						<div
-							className={`w-11 h-11 rounded-xl bg-gradient-to-br ${previewGradient} flex items-center justify-center text-white font-black text-base shadow-lg`}
+							className={`w-11 h-11 rounded-xl bg-linear-to-br ${previewGradient} flex items-center justify-center text-white font-black text-base shadow-lg`}
 						>
 							{initials}
 						</div>
@@ -265,9 +267,171 @@ function AddEmployeeModal({ onClose, onAdd }) {
 	);
 }
 
-function deleteEmployee() {}
+function EditModal({ emp, onSave, onClose }) {
+	const overlayRef = useRef(null);
+	const [form, setForm] = useState({
+		name: emp.name,
+		username: emp.username,
+		email: emp.email,
+		phone: emp.phone,
+		city: emp.address?.city,
+		website: emp.website,
+		company: emp.company?.name,
+	});
 
-function EmployeeCard({ emp, index, onDelete }) {
+	const handleOverlay = e => {
+		if (e.target === overlayRef.current) onClose();
+	};
+
+	useEffect(() => {
+		const handler = e => {
+			if (e.key === "Escape") onClose();
+		};
+		window.addEventListener("keydown", handler);
+		return () => window.removeEventListener("keydown", handler);
+	}, [onClose]);
+
+	const handleChange = e => {
+		setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+	};
+
+	const handleSubmit = () => {
+		onSave({
+			...emp,
+			name: form.name,
+			username: form.username,
+			email: form.email,
+			phone: form.phone,
+			address: { ...emp.address, city: form.city },
+			website: form.website,
+			company: { ...emp.company, name: form.company },
+		});
+	};
+
+	const gradient = GRADIENTS[0];
+
+	return (
+		<div
+			ref={overlayRef}
+			onClick={handleOverlay}
+			className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4'
+		>
+			<div className='relative w-full max-w-lg bg-slate-900/90 border border-white/10 rounded-3xl shadow-2xl shadow-purple-900/30 overflow-hidden'>
+				<div className={`h-1.5 w-full bg-linear-to-r ${gradient}`} />
+				<div className='flex items-center justify-between px-6 pt-5 pb-4'>
+					<div className='flex items-center gap-3'>
+						<div
+							className={`w-11 h-11 rounded-xl bg-linear-to-br ${gradient} flex items-center justify-center text-white font-black text-base shadow-lg`}
+						>
+							{getInitials(form.name || "E")}
+						</div>
+						<div>
+							<h2 className='text-white font-bold text-lg leading-tight'>
+								Edit Employee
+							</h2>
+							<p className='text-slate-400 text-xs'>Update the details below</p>
+						</div>
+					</div>
+					<button
+						onClick={onClose}
+						className='w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white transition-all'
+					>
+						<X className='w-4 h-4' />
+					</button>
+				</div>
+
+				<div className='px-6 pb-2 grid grid-cols-1 sm:grid-cols-2 gap-3'>
+					<div className='sm:col-span-2'>
+						<Field
+							icon={User}
+							label='Full Name'
+							name='name'
+							value={form.name}
+							onChange={handleChange}
+							placeholder='e.g. Jordan Lee'
+							accentClass='text-fuchsia-400'
+						/>
+					</div>
+					<Field
+						icon={AtSign}
+						label='Username'
+						name='username'
+						value={form.username}
+						onChange={handleChange}
+						placeholder='e.g. jordanlee'
+						accentClass='text-purple-400'
+					/>
+					<Field
+						icon={Mail}
+						label='Email'
+						name='email'
+						value={form.email}
+						onChange={handleChange}
+						placeholder='jordan@company.com'
+						accentClass='text-cyan-400'
+						type='email'
+					/>
+					<Field
+						icon={Phone}
+						label='Phone'
+						name='phone'
+						value={form.phone}
+						onChange={handleChange}
+						placeholder='+1 555-0100'
+						accentClass='text-lime-400'
+						type='tel'
+					/>
+					<Field
+						icon={MapPin}
+						label='City'
+						name='city'
+						value={form.city}
+						onChange={handleChange}
+						placeholder='e.g. New York'
+						accentClass='text-pink-400'
+					/>
+					<Field
+						icon={Link}
+						label='Website'
+						name='website'
+						value={form.website}
+						onChange={handleChange}
+						placeholder='jordanlee.dev'
+						accentClass='text-orange-400'
+					/>
+					<Field
+						icon={Building2}
+						label='Company'
+						name='company'
+						value={form.company}
+						onChange={handleChange}
+						placeholder='Acme Corp'
+						accentClass='text-teal-400'
+					/>
+				</div>
+
+				<div className='flex items-center justify-end gap-3 px-6 py-5'>
+					<button
+						onClick={onClose}
+						className='px-4 py-2 rounded-xl text-sm font-semibold text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all'
+					>
+						Cancel
+					</button>
+					<button
+						onClick={handleSubmit}
+						className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r ${gradient} hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-700/30`}
+					>
+						<Pencil className='w-4 h-4' />
+						Save Changes
+					</button>
+				</div>
+			</div>
+		</div>
+	);
+}
+
+// function deleteEmployee() {}
+function EmployeeCard({ emp, index, onDelete, onEdit }) {
 	const gradient = GRADIENTS[index % GRADIENTS.length];
 	const tilt = TILTS[index % TILTS.length];
 
@@ -275,6 +439,13 @@ function EmployeeCard({ emp, index, onDelete }) {
 		<div
 			className={`group relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-5 transition-all duration-300 hover:-translate-y-2 hover:${tilt} hover:border-white/30 hover:shadow-2xl hover:shadow-purple-500/20`}
 		>
+			{/* ✏️ Edit button — appears on hover */}
+			<button
+				onClick={() => onEdit(emp)}
+				className='group absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-all duration-200 scale-75 group-hover:scale-100 w-8 h-8 flex items-center justify-center rounded-xl bg-white/10 border border-white/20 text-slate-300 hover:bg-white/20 hover:text-white'
+			>
+				<Pencil className='w-3.5 h-3.5' />
+			</button>
 			{/* sticker badge */}
 			<div
 				className={`absolute -top-3 -right-3 rotate-6 bg-linear-to-br ${gradient} text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg tracking-wide uppercase`}
@@ -285,7 +456,7 @@ function EmployeeCard({ emp, index, onDelete }) {
 			{/* avatar */}
 			<div className='flex items-center gap-4 mb-4'>
 				<div
-					className={`w-16 h-16 shrink-0 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white font-black text-xl shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300`}
+					className={`w-16 h-16 shrink-0 rounded-2xl bg-linear-to-br ${gradient} flex items-center justify-center text-white font-black text-xl shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300`}
 				>
 					{getInitials(emp.name)}
 				</div>
@@ -298,7 +469,6 @@ function EmployeeCard({ emp, index, onDelete }) {
 					</p>
 				</div>
 			</div>
-
 			{/* details */}
 			<div className='space-y-2 text-sm'>
 				<div className='flex items-center gap-2 text-slate-300'>
@@ -326,7 +496,6 @@ function EmployeeCard({ emp, index, onDelete }) {
 				<Globe className='w-3.5 h-3.5' />
 				{emp.website}
 			</a>
-
 			<button
 				onClick={() => onDelete(emp.id)}
 				className='mt-2 flex items-center justify-center gap-1.5 w-full py-2 rounded-xl text-xs font-bold transition-all border bg-white/3 border-white/8 text-slate-500 hover:bg-rose-500/10 hover:border-rose-400/30 hover:text-rose-400'
@@ -362,6 +531,7 @@ export default function AllEmployees() {
 	const [search, setSearch] = useState("");
 	const [loading, setLoading] = useState(true);
 	const [showModal, setShowModal] = useState(false);
+	const [editingEmp, setEditingEmp] = useState(null);
 
 	useEffect(() => {
 		fetch("https://jsonplaceholder.typicode.com/users")
@@ -377,11 +547,18 @@ export default function AllEmployees() {
 		setEmployees(prev => [newEmp, ...prev]);
 	};
 	const handleDeleteEmployee = id => {
-		{
-			console.log(setEmployees);
-		}
 		// setEmployees(prev => console.log(prev));
 		setEmployees(prev => prev.filter(emp => emp.id !== id));
+	};
+	const handleEditEmployee = emp => {
+		setEditingEmp(emp);
+	};
+
+	const handleSaveEmployee = updatedEmp => {
+		setEmployees(prev =>
+			prev.map(emp => (emp.id === updatedEmp.id ? updatedEmp : emp)),
+		);
+		setEditingEmp(null);
 	};
 
 	const filtered = employees.filter(
@@ -457,6 +634,7 @@ export default function AllEmployees() {
 								emp={emp}
 								index={i}
 								onDelete={handleDeleteEmployee}
+								onEdit={handleEditEmployee}
 							/>
 						))}
 					</div>
@@ -468,6 +646,14 @@ export default function AllEmployees() {
 				<AddEmployeeModal
 					onClose={() => setShowModal(false)}
 					onAdd={handleAddEmployee}
+				/>
+			)}
+
+			{editingEmp && (
+				<EditModal
+					emp={editingEmp}
+					onSave={handleSaveEmployee}
+					onClose={() => setEditingEmp(null)}
 				/>
 			)}
 		</div>
